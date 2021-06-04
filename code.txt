@@ -1,0 +1,217 @@
+추가로 코딩해줘야할 사항들입니다.
+위쪽일수록 더 높은 우선순위를 가집니다.
+<server>는 서버 측의 코드(.java)를 의미합니다. 
+<client>는 서버 측의 코드(.js .jsp .css)를 의미합니다. 
+
+
+* 처음 페이지에서 이름 입력 기능 추가 :
+<client>
+ p_name = 입력된 이름
+
+<body>
+<form action=”train01″ method=”post” ><br>
+이름 입력：<input type=”text” name=”p_name” ><br>
+<button type=”submit” value=”submit” >submit</button>
+</form>
+</body>
+//SUNYILIN
+
+
+* 플레이어의 이름을 canvas에 그리기
+<script>
+var c=document.querySelector("canvas");
+var ctx=c.getContext("2d");
+
+ctx.font="30px Verdana";
+//text style
+var gradient=ctx.createLinearGradient(0,0,c.width,0);
+gradient.addColorStop("0","magenta");
+gradient.addColorStop("0.5","blue");
+gradient.addColorStop("1.0","red");
+
+ctx.fillStyle=gradient;
+ctx.fillText(p_name,10,90);
+</script>
+//SUNYILIN
+
+
+* 플레이어 입장시 맵 생성 기능 개선 :
+<server>
+>> Map.java 내의 주석 참고
+
+* 몬스터 기본 AI 추가 :
+<server>
+Player SelectedPlayer;
+double distance;
+for (모든 몬스터) {
+ distance=2000.0; //최대 감지 거리 2000.0
+ for(주변 공간의 모든 플레이어) {
+  if(플레이어aggro) {
+   if(플레이어와 몬스터 간의 거리 <distance) {
+    SelectedPlayer=플레이어
+    distance=플레이어와 몬스터 간의 거리
+   }
+  }
+ }
+ 몬스터target=SelectedPlayer
+}
+<server>
+for (모든 몬스터) {
+ if(몬스터target==null) {
+  몬스터는 랜덤하게 이동 //Monster 객체의 메소드로 구현
+ }
+ else {
+  몬스터는 target을 향해 이동 //Monster 객체의 메소드로 구현
+ }
+}
+<server>
+ ... 몬스터의 충돌처리 코드
+//0.02초마다 충돌처리를 한 번씩 하므로 연속충돌횟수 50은 1초간 충돌하고 있음을 의미
+if(몬스터target!=null && 지형물연속충돌횟수>50) {
+ 전방의 지형물의 hp 감소
+ if(전방의 지형물의 hp<=0) {
+  해당 지형물 제거 //Furniture 객체의 메소드로 구현
+ }
+}
+<server>
+if(몬스터와 몬스터target 간의 거리 < 60.0) { //공격 사거리 60.0
+ target의 hp감소 //Player 객체의 메소드로 구현
+}
+
+
+* Monster 객체의 랜덤 이동 메소드 추가
+
+
+* Monster target을 향해 이동 메소드 추가
+
+
+* Furniture 객체의 제거 메소드 추가 :
+<server>
+ ... Furniture 객체 블록 내부
+public void Delete() {
+ 해당 객체가 제거됨을 주변 플레이어에게 송신
+furniture.clear;//가구 제거 
+publicmsg("Futniture is clear");
+ this=null
+}
+<client>
+case : "가구 제거"수신
+ 해당 가구 제거
+//SUNYILIN
+
+
+* Player 객체의 hp감소 메소드 추가 :
+<server>
+ ... Player 객체 블록 내부
+public value HpReduce(player player){
+     value=player.hp--;
+      return value;
+}
+hp public void HpUpdate(int value,player player) {
+ this.hp+=value
+ if(this.hp<0) this.hp=0
+ if(this.hp>1000) this.hp=0
+ player.hp=this.hp;
+ if (player.hp==0) {
+  system.out.println（"gamerover"）;
+  clear(player.id);// 해당 플레이어에게 "game over"를 송신
+  플레이어 제거 //Player 객체의 메소드로 구현
+ }
+}
+<client>
+case : "hp"수신
+ p_hp = 수신받은 값
+case : "game over"수신
+ clearInterval(mainintervalId);
+ mainintervalId = setInterval(maininterval_gameover, 20);
+ p_image.src = "images/none.png";
+ $("#GameOver").html("You survived for");
+ $("#GameOverDay").html(day+" day");
+ $("#GameOver").show();
+ $("#GameOverDay").show();
+ canvas.removeEventListener("mousemove", getMP);
+ document.removeEventListener("keydown", onkey_press);
+ document.removeEventListener("keyup", onkey_up);
+ 처음 화면으로 돌아가는 버튼 생성
+//SUNYILIN
+
+
+* Player 객체의 제거 메소드 추가 :
+<server>
+ ... Player 객체 블록 내부
+public void Delete() {
+ 해당 객체가 제거됨을 주변 플레이어에게 송신
+ this=null
+}
+<client>
+case : "플레이어 제거"수신
+ 해당 플레이어 제거
+
+
+* 허기(ep) 추가 :
+<server>
+for (모든 플레이어) {
+ if(플레이어ep==0) {
+  플레이어hp 감소 //Player 객체의 메소드로 구현
+ }
+ else {
+  플레이어hp 증가 //Player 객체의 메소드로 구현
+  플레이어ep 감소 //Player 객체의 메소드로 구현
+ }
+}
+
+
+* Player 객체의 ep감소 메소드 추가 :
+<server>
+ ... Player 객체 블록 내부
+public void EpUpdate(int value) {
+ this.ep+=value
+ if(this.ep<0) this.ep=0
+ ep 정보를 해당 플레이어에게 송신
+}
+<client>
+case : "ep"수신
+ p_ep = 수신받은 값
+
+
+* 음식 추가 :
+<server>
+>> Food 클래스 추가
+<server>
+>> Section.java 내부에 음식 생성 코드 추가
+<server>
+ ... 플레이어의 위치가 변하는 코드
+if(플레이어와 음식 사이 거리<일정거리) {
+ 음식 제거 // Food 객체의 메소드로 구현
+ 해당 음식의 효과를 플레이어에게 적용 // hp, ep 일정량증가
+}
+
+
+* Food 객체의 제거 메소드 추가 :
+<server>
+ ... Furniture 객체 블록 내부
+public void Delete() {
+ 해당 객체가 제거됨을 주변 플레이어에게 송신
+ this=null
+}
+<client>
+case : "음식 제거"수신
+ 해당 음식 제거
+
+
+* 일정주기로 음식,가구,몬스터 스폰 기능 추가
+
+
+* 가구 종류 추가
+
+
+* 가구 옮기기 기능 추가
+
+
+* 몬스터의 공격 이펙트 추가
+
+
+* 플레이어의 공격기능 추가
+
+
+* 플레이어의 공격 이펙트 추가
