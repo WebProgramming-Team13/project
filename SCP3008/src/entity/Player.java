@@ -149,6 +149,7 @@ public class Player extends Entity {
 		try { this.session.getBasicRemote().sendText(obj.toJSONString());
 		} catch (IOException e) {e.printStackTrace();}
 	}
+	
 	public void Move(int sx, int sy, double x, double y) {
 		this.x=x;
 		this.x=y;
@@ -157,12 +158,20 @@ public class Player extends Entity {
 			break;
 		case 1:
 			this.temp_space=this.space.right;
-			if(this.temp_space.entitys!=null) this.space=this.temp_space;
+			if(this.temp_space.entitys!=null) {
+				this.space.entitys.remove(this);
+				this.space=this.temp_space;
+				this.space.entitys.add(this);
+			}
 			this.sx=sx;
 			break;
 		case -1:
 			this.temp_space=this.space.left;
-			if(this.temp_space.entitys!=null) this.space=this.temp_space;
+			if(this.temp_space.entitys!=null) {
+				this.space.entitys.remove(this);
+				this.space=this.temp_space;
+				this.space.entitys.add(this);
+			}
 			this.sx=sx;
 			break;
 		default:
@@ -173,12 +182,20 @@ public class Player extends Entity {
 			break;
 		case 1:
 			this.temp_space=this.space.down;
-			if(this.temp_space.entitys!=null) this.space=this.temp_space;
+			if(this.temp_space.entitys!=null) {
+				this.space.entitys.remove(this);
+				this.space=this.temp_space;
+				this.space.entitys.add(this);
+			}
 			this.sy=sy;
 			break;
 		case -1:
 			this.temp_space=this.space.up;
-			if(this.temp_space.entitys!=null) this.space=this.temp_space;
+			if(this.temp_space.entitys!=null) {
+				this.space.entitys.remove(this);
+				this.space=this.temp_space;
+				this.space.entitys.add(this);
+			}
 			this.sy=sy;
 			break;
 		default:

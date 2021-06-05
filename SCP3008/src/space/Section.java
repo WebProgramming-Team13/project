@@ -1,9 +1,17 @@
 package space;
 
+import java.io.IOException;
+import java.util.Iterator;
 import java.util.Random;
 
+import javax.websocket.Session;
+
+import org.json.simple.JSONObject;
+
+import entity.Entity;
 import entity.Food;
 import entity.Monster;
+import entity.Player;
 import terrain.Furniture;
 import terrain.Wall;
 
@@ -117,11 +125,6 @@ public class Section {
 			}
 		}
 		this.headspace=spaces[0][0];
-		for(i=0;i<100;i++) {
-			for(j=0;j<100;j++) {
-				spaces[i][j].SendCreate();//공간이 생성되었음을 주변플레이어들에게 전송
-			}
-		}
 		for(i=0;i<100;i+=20) {
 			for(j=0;j<100;j+=20) {
 				if((i!=0 && i!=80) || (j!=0 && j!=80)) {
@@ -130,13 +133,21 @@ public class Section {
 							if((k+n)%2==0) spaces[i+k][j+n].imagename="woodfloor1";
 							else spaces[i+k][j+n].imagename="woodfloor2";
 							rdnum=random.nextInt(1000);
-							if(rdnum<300) new Furniture(0, spaces[i+k][j+n], "box"); //30%확률로 가구 생성, 한 구역 당 평균2041.2개의 가구 생성
-							else if(rdnum<302) new Monster(spaces[i+k][j+n], "monster1"); //0.2%확률로 몹 생성, 한 구역 당 평균13.608마리의 몬스터 생성
-							else if(rdnum<303) new Food(spaces[i+k][j+n], "food1"); //0.1%확률로 음식 생성
+							if(rdnum<300) new Furniture(0, spaces[i+k][j+n], true); //30%확률로 가구 생성, 한 구역 당 평균2041.2개의 가구 생성
+							else if(rdnum<302) new Monster(0, spaces[i+k][j+n], true); //0.2%확률로 몹 생성, 한 구역 당 평균13.608마리의 몬스터 생성
+							else if(rdnum<303) new Food(0, spaces[i+k][j+n], true); //0.1%확률로 음식 생성
 						}
 					}
 				}
 			}
+		}
+		
+		Iterator<Player> iter = spaces[50][50].PlayerNearby(90, 90).iterator(); //Iterator 선언 
+		while(iter.hasNext()){//다음값이 있는지 체크
+			JSONObject obj = new JSONObject();
+			obj.put("type", "StartML");
+			try { iter.next().session.getBasicRemote().sendText(obj.toJSONString());// 새로운 구역이 생성되었으므로 주변 플레이어들은 맵로드
+			} catch (IOException e) {e.printStackTrace();}
 		}
 		spaces=null;
 	}
