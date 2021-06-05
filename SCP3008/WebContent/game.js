@@ -15,10 +15,10 @@ let spaces;
 let temp_spaces;
 let map_road_ready;
 let map_roading;
+let start_map_loading;
 let saved_x;
 let saved_y;
-let arrMonster;
-let arrPlayer;
+let list_all;
 
 // 변수이름에서 "p_"는 본인의 player를 의미함
 //플레이어 START
@@ -83,6 +83,7 @@ function Monster(space, id, x, y, angle, imagename, hp) {//monster 객체
 	this.image = new Image(); this.image.src = "images/"+imagename+".png";
 	this.hp=hp;
 	this.speed=3.3; //딱히 쓰일 일이 없는 변수
+	list_all.push(this);
 	
 	this.draw = function(x, y) {//monster 그리기
 		context.save();
@@ -104,6 +105,7 @@ function Player(space, id, x, y, angle, hp, name) {//player 객체
 	this.hp=hp;
 	this.speed=3.0; //딱히 쓰일 일이 없는 변수
 	this.name=name;
+	list_all.push(this);
 	
 	this.draw = function(x, y) {//player 그리기
 		context.save();
@@ -123,6 +125,7 @@ function Food(space, id, x, y, angle, imagename) {//Food 객체
 	this.angle=angle;
 	this.space=space;
 	this.image = new Image(); this.image.src = "images/"+imagename+".png";
+	list_all.push(this);
 	
 	this.draw = function(x, y) {//Food 그리기
 		context.save();
@@ -137,6 +140,7 @@ function Wall(space, id, imagename) { //지형 객체
 	this.id=id;
 	this.space=space;
 	this.image = new Image(); this.image.src = "images/"+imagename+".png";
+	list_all.push(this);
 	
 	this.draw = function(x, y) {
 		context.drawImage(this.image, x, y, 40, 40);
@@ -148,6 +152,7 @@ function Furniture(space, id, imagename, hp) { //가구 객체
 	this.space=space;
 	this.hp=hp;
 	this.image = new Image(); this.image.src = "images/"+imagename+".png";
+	list_all.push(this);
 	
 	this.draw = function(x, y) {
 		context.drawImage(this.image, x, y, 40, 40);
@@ -249,17 +254,6 @@ function playermove() {//player 이동
 }
 
 
-
-function start_map_loading() {
-	ws.send(JSON.stringify({//JSON객체를 직렬화하고 보내기
-        type: "MapLoad"
-      }));
-	map_roading=true;
-	//loading 시작 당시의 space좌표 저장
-	saved_x=p_space_x;
-	saved_y=p_space_y;
-}
-
 //"개체->개체의 주변공간->그 공간 내의 개체,지형들->충돌처리"와 같은 방식으로 충돌처리를 수행
 //개체의 주변공간에 존재하는 개체,지형의 개수는 유한함(서로 겹치지 못하게 충돌처리를 수행함)
 //따라서 한 개체의 충돌처리의 연산량은 O(1)
@@ -286,9 +280,7 @@ function p_collision() {//player충돌처리
 			else { //공간 경계 충돌 처리
 				p_x-=40.0;
 				p_space_x+=1;
-			}
-			if(p_space_x==55 && !map_roading) { //새로 맵 로딩 시작할지 여부
-				start_map_loading();
+				if(p_space_x==55) start_map_loading=true;
 			}
 		}
 	}
@@ -304,9 +296,7 @@ function p_collision() {//player충돌처리
 			else { //공간 경계 충돌 처리
 				p_x+=40.0;
 				p_space_x-=1;
-			}
-			if(p_space_x==25 && !map_roading) { //새로 맵 로딩 시작할지 여부
-				start_map_loading();
+				if(p_space_x==25) start_map_loading=true;
 			}
 		}
 	}
@@ -322,9 +312,7 @@ function p_collision() {//player충돌처리
 			else { //공간 경계 충돌 처리
 				p_y-=40.0;
 				p_space_y+=1;
-			}
-			if(p_space_y==64 && !map_roading) { //새로 맵 로딩 시작할지 여부
-				start_map_loading();
+				if(p_space_y==64) start_map_loading=true;
 			}
 		}
 	}
@@ -340,9 +328,7 @@ function p_collision() {//player충돌처리
 			else { //공간 경계 충돌 처리
 				p_y+=40.0;
 				p_space_y-=1;
-			}
-			if(p_space_y==16 && !map_roading) { //새로 맵 로딩 시작할지 여부
-				start_map_loading();
+				if(p_space_y==16) start_map_loading=true;
 			}
 		}
 	}
@@ -422,6 +408,17 @@ function p_collision() {//player충돌처리
         sx: p_space_x,
         sy: p_space_y
       }));
+	
+	if(start_map_loading && !map_roading) { //새로 맵 로딩 시작할지 여부
+		ws.send(JSON.stringify({//JSON객체를 직렬화하고 보내기
+	        type: "MapLoad"
+	      }));
+		map_roading=true;
+		start_map_loading=false;
+		//loading 시작 당시의 space좌표 저장
+		saved_x=p_space_x;
+		saved_y=p_space_y;
+	}
 }
 
 function map_road() {//map 로드
@@ -446,56 +443,70 @@ function maininterval_gameover() {      // game over 이후 주기적 실행
 	draw();//전부 그리기
 }
 
+function getbyid(id) {//특정 객체를 id로 얻음
+	for (let i = 0; i < list_all.length; i++) {
+		if(list_all[i].id==id) return list_all[i];
+	}
+	return null;
+}
+
 function onMessage(event) { //서버로부터 메세지가 왔을 때 실행될 함수
 	let obj = JSON.parse(event.data);//data를 역직렬화하고 JSON객체 얻기
+	let entity;
+	let terrain;
+	let tag;
+	let space;
+	
 	switch(obj.type) {
 	case "Mapload" : //플레이어 맵로드 정보 수신
-		let entity;
-		let terrain;
-		let tag;
-		let space;
+		let s;
+		let s_ett;
+		let s_trn;
 		for (let i = 0; i < 81; i++) {
 		    for (let j = 0; j < 81; j++) {
-		    	if (obj.slist[i][j]==null) space=voidspace;
+		    	s=obj.slist[i][j];
+		    	if (s==null) space=voidspace;
 		    	else {
-		    		space=new Space(obj.slist[i][j].img);
-			    	for (let k = 0; k < obj.slist[i][j].e_c; k++) {
-			    		tag=obj.slist[i][j].ett[k].tag;
+		    		space=new Space(s.img);
+			    	for (let k = 0; k < s.e_c; k++) {
+			    		s_ett=obj.slist[i][j].ett[k];
+			    		tag=s_ett.tag;
 			    		if(tag==0) entity=new Player(space,
-			    			obj.slist[i][j].ett[k].id,
-			    			obj.slist[i][j].ett[k].x,
-			    			obj.slist[i][j].ett[k].y,
-			    			obj.slist[i][j].ett[k].agl,
-			    			obj.slist[i][j].ett[k].hp,
-			    			obj.slist[i][j].ett[k].nam
+			    				s_ett.id,
+			    				s_ett.x,
+			    				s_ett.y,
+			    				s_ett.agl,
+			    				s_ett.hp,
+			    				s_ett.nam
 		    			);
 			    		else if(tag==1) entity=new Monster(space,
-				    		obj.slist[i][j].ett[k].id,
-				    		obj.slist[i][j].ett[k].x,
-				    		obj.slist[i][j].ett[k].y,
-				    		obj.slist[i][j].ett[k].agl,
-				    		obj.slist[i][j].ett[k].img,
-				    		obj.slist[i][j].ett[k].hp
+			    				s_ett.id,
+			    				s_ett.x,
+			    				s_ett.y,
+			    				s_ett.agl,
+			    				s_ett.img,
+			    				s_ett.hp
 			    		);
 			    		else if(tag==2) entity=new Food(space,
-					    	obj.slist[i][j].ett[k].id,
-					    	obj.slist[i][j].ett[k].x,
-					    	obj.slist[i][j].ett[k].y,
-					    	obj.slist[i][j].ett[k].agl,
-					    	obj.slist[i][j].ett[k].img
+			    				s_ett.id,
+			    				s_ett.x,
+			    				s_ett.y,
+			    				s_ett.agl,
+			    				s_ett.img
 				    	);
 			    		space.entitylist.push(entity);
 					}
-			    	if(obj.slist[i][j].trn!=null) {
-			    		tag=obj.slist[i][j].trn.tag;
+			    	s_trn=obj.slist[i][j].trn;
+			    	if(s_trn!=null) {
+			    		tag=s_trn.tag;
 				    	if(tag==0) terrain=new Wall(space,
-				    			obj.slist[i][j].trn.id,
-				    			obj.slist[i][j].trn.img
+				    			s_trn.id,
+				    			s_trn.img
 				    		);
 				    	else if(tag==1) terrain=new Furniture(space,
-				    		obj.slist[i][j].trn.id,
-				    		obj.slist[i][j].trn.img,
-				    		obj.slist[i][j].trn.hp
+				    			s_trn.id,
+				    			s_trn.img,
+				    			s_trn.hp
 				    	);
 				    	space.terrain=terrain;
 			    	}
@@ -515,8 +526,34 @@ function onMessage(event) { //서버로부터 메세지가 왔을 때 실행될 
 			night=false;
 		}
 		break;
+	case "StartML" : // 맵 로딩 시작 요청
+		start_map_loading=true;
+		break;
 	case "" : // ...
 		
+		break;
+	case "" : // ...
+		
+		break;
+	case "newFood" : // 새로운 음식 생성
+		space=spaces[p_space_x+obj.dsx][p_space_y+obj.dsy];
+		space.entitylist.push(new Food(
+				space,
+				obj.id,
+				obj.x,
+				obj.y,
+				obj.agl,
+				obj.img
+			));
+		break;
+	case "newFnt" : // 새로운 가구 생성
+		space=spaces[p_space_x+obj.dsx][p_space_y+obj.dsy];
+		space.terrain=new Furniture(
+				space,
+				obj.id,
+				obj.img,
+				obj.hp
+			);
 		break;
 	}
 }
@@ -554,10 +591,10 @@ function start() {	// start 버튼 클릭시 이벤트
     backward = false; //s 셋팅
     map_road_ready=false; //맵을 로드하는지 여부
     map_roading=false; //맵을 로딩중인지 여부
+    start_map_loading=false; //맵을 로딩을 시작하는지 여부
     saved_x=40; //로딩 시작시 p_space_x 값을 저장할 변수
     saved_y=40; //로딩 시작시 p_space_y 값을 저장할 변수
-    arrMonster=new Array();//나중에 모든 monster들에 접근할 수있도록 배열을 만듦
-    arrPlayer=new Array();//나중에 모든 상대 player들에 접근할 수있도록 배열을 만듦
+    list_all=new Array();//나중에 모든 객체들에 접근할 수있도록 배열을 만듦
     spaces= new Array(81); //맵을 나타내는 공간들
 	for (let i = 0; i < 81; i++) {
 		spaces[i] = new Array(81);

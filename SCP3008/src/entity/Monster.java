@@ -8,17 +8,39 @@ public class Monster extends Entity {
 	public int hp;
 	public double speed;
 	
-	public Monster(Space space, String imagename) {
+	public Monster(int type, Space space) {
 		this.tag=1;
 		this.id=Map.id++;
-		this.hp=1000;
 		this.x=20.0;
 		this.y=20.0;
 		this.angle=0.0;
-		this.speed=3.3;
 		this.space=space;
 		this.target=null;
-		this.imagename=imagename;
+		switch(type) {
+		case 0:
+			this.imagename="monster1";
+			this.hp=1000;
+			this.speed=3.3;
+			break;
+		}
+		Map.monsterlist.add(this);
+		space.entitys.add(this);
+	}
+	public Monster(int type, Space space, boolean t) {//주변 플레이어에게 해당 객체가 생성됬음을 알리지 않는 생성자
+		this.tag=1;
+		this.id=Map.id++;
+		this.x=20.0;
+		this.y=20.0;
+		this.angle=0.0;
+		this.space=space;
+		this.target=null;
+		switch(type) {
+		case 0:
+			this.imagename="monster1";
+			this.hp=1000;
+			this.speed=3.3;
+			break;
+		}
 		Map.monsterlist.add(this);
 		space.entitys.add(this);
 	}
