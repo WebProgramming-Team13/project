@@ -1,0 +1,64 @@
+BODY {
+  position:relative;
+  margin: 0 auto;
+}
+
+canvas{
+  border:1px black solid;
+  background-color:black;
+  position:absolute;
+  margin-left: -800px;
+  display:block;
+}
+#DAY{
+  color:purple;
+  font-size: 15pt;
+  position:absolute;
+  margin-left: -790px;
+
+}
+#HP{
+  color:red;
+  font-size: 15pt;
+  position:absolute;
+  margin-left: -790px;
+  margin-top: 870px;
+}
+#EP{
+  color:green;
+  font-size: 15pt;
+  position:absolute;
+  margin-left: -790px;
+  margin-top: 850px;
+}
+#main{
+  position:absolute;
+  left: 50%;
+  top: 50%;
+}
+#start{
+  position:absolute;
+  width:100px;
+  heigth:80px;
+  font-size:18pt;
+  margin-left: -50px;
+  margin-top: 470px;
+}
+#GameOver{
+  color:red;
+  width:300px;
+  heigth:80px;
+  font-size: 30pt;
+  position:absolute;
+  margin-left: -150px;
+  margin-top: 360px;
+}
+#GameOverDay{
+  color:red;
+  width:130px;
+  heigth:80px;
+  font-size: 30pt;
+  position:absolute;
+  margin-left: -65px;
+  margin-top: 400px;
+}
