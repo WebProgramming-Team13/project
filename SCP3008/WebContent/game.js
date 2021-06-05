@@ -385,7 +385,7 @@ function p_collision() {//player충돌처리
 	for (let i = -1; i <= 1; i++) {
 	    for (let j = -1; j <= 1; j++) {
 	    	c_entitylist= spaces[p_space_x+i][p_space_y+j].entitylist;
-	    	for (let k = 0; k < spaces[p_space_x+i][p_space_y+j].entitylist.length; k++) {
+	    	for (let k = 0; k < c_entitylist.length; k++) {
 	    		if(c_entitylist[k].tag!=2) {
 	    			c_dx=c_entitylist[k].x+40.0*i-p_x;
 		    		c_dy=c_entitylist[k].y+40.0*j-p_y;
@@ -456,19 +456,22 @@ function onMessage(event) { //서버로부터 메세지가 왔을 때 실행될 
 	let terrain;
 	let tag;
 	let space;
+	let i;
+	let j;
+	let k;
 	
 	switch(obj.type) {
 	case "Mapload" : //플레이어 맵로드 정보 수신
 		let s;
 		let s_ett;
 		let s_trn;
-		for (let i = 0; i < 81; i++) {
-		    for (let j = 0; j < 81; j++) {
+		for (i = 0; i < 81; i++) {
+		    for (j = 0; j < 81; j++) {
 		    	s=obj.slist[i][j];
 		    	if (s==null) space=voidspace;
 		    	else {
 		    		space=new Space(s.img);
-			    	for (let k = 0; k < s.e_c; k++) {
+			    	for (k = 0; k < s.e_c; k++) {
 			    		s_ett=obj.slist[i][j].ett[k];
 			    		tag=s_ett.tag;
 			    		if(tag==0) entity=new Player(space,
@@ -535,7 +538,28 @@ function onMessage(event) { //서버로부터 메세지가 왔을 때 실행될 
 	case "" : // ...
 		
 		break;
-	case "newFood" : // 새로운 음식 생성
+	case "ep" : // ...
+		p_ep=obg.val
+		break;
+	case "hp" : // ...
+		p_hp=obg.val
+		if(p_hp==0) {
+			clearInterval(mainintervalId);
+			mainintervalId = setInterval(maininterval_gameover, 20);
+			p_image.src = "images/none.png";
+			$("#GameOver").html("You survived for");
+			$("#GameOverDay").html(day+" day");
+			$("#GameOver").show();
+			$("#GameOverDay").show();
+			canvas.removeEventListener("mousemove", getMP);
+			ocument.removeEventListener("keydown", onkey_press);
+			document.removeEventListener("keyup", onkey_up);
+			p_image.src = "images/none.png"
+			ws.close();
+			//*
+		}
+		break;
+	case "NewFood" : // 새로운 음식 생성
 		space=spaces[p_space_x+obj.dsx][p_space_y+obj.dsy];
 		space.entitylist.push(new Food(
 				space,
@@ -546,7 +570,7 @@ function onMessage(event) { //서버로부터 메세지가 왔을 때 실행될 
 				obj.img
 			));
 		break;
-	case "newFnt" : // 새로운 가구 생성
+	case "NewFnt" : // 새로운 가구 생성
 		space=spaces[p_space_x+obj.dsx][p_space_y+obj.dsy];
 		space.terrain=new Furniture(
 				space,
@@ -554,6 +578,18 @@ function onMessage(event) { //서버로부터 메세지가 왔을 때 실행될 
 				obj.img,
 				obj.hp
 			);
+		break;
+	case "DelEtt" : // 엔티티 제거
+		entity=getbyid(obj.id);
+		for(i = 0; i < entity.space.entitylist.length; i++) {
+			if(entity.space.entitylist[i] == entity)  {
+				entity.space.entitylist.splice(i, 1);
+			    break;
+			}
+		}
+		break;
+	case "DelTrn" : // 지형물 제거
+		getbyid(obj.id).space.terrain=null;
 		break;
 	}
 }

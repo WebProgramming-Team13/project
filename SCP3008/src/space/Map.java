@@ -56,7 +56,7 @@ public class Map {
 			return rt_section;
 		}
 	}
-	public static Player GetPlayer(Session session) {
+	public static Player GetPlayer(Session session) {//주어진 seesion을 가지는 player찾기
 		Player player;
 		Iterator<Player> iter = Map.playerlist.iterator(); //Iterator 선언 
 		while(iter.hasNext()){//다음값이 있는지 체크
