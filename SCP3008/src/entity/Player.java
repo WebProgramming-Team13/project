@@ -3,6 +3,7 @@ package entity;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 import javax.websocket.EncodeException;
 import javax.websocket.Session;
@@ -44,15 +45,19 @@ public class Player extends Entity {
 		Map.playerlist.add(this);
 		space.entitys.add(this);
 	}
+	@SuppressWarnings("unchecked")
 	public void Delete() {
-		//*
+		// 플레이어가 제거되었으므로 주변 플레이어들에게 해당 정보 전송
+		Iterator<Player> iter = this.space.PlayerNearby(40, 40).iterator(); //Iterator 선언 
+		while(iter.hasNext()){//다음값이 있는지 체크
+			JSONObject obj = new JSONObject();
+			obj.put("type", "DelEtt");
+			obj.put("id", this.id);
+			try { iter.next().session.getBasicRemote().sendText(obj.toJSONString());
+			} catch (IOException e) {e.printStackTrace();}
+		}
 		this.space.entitys.remove(this);
 		Map.playerlist.remove(this);
-	}
-	public void Setspace(Space space) {
-		this.space.entitys.remove(this);
-		space.entitys.add(this);
-		this.space=space;
 	}
 	@SuppressWarnings("unchecked")
 	public void MapLoad(int x, int y) {//Map을 로딩한다.
@@ -201,6 +206,55 @@ public class Player extends Entity {
 		default:
 			this.sy=sy;
 		}
-		
+		//Food 충돌처리
+		Entity entity;
+		Food food;
+		double dx, dy;
+		for (int i = -1; i <= 1; i++) {
+		    for (int j = -1; j <= 1; j++) {
+		    	Iterator<Entity> iter = this.space.entitys.iterator(); //Iterator 선언 
+				while(iter.hasNext()){//다음값이 있는지 체크
+					entity=iter.next();
+					if(entity.tag==2) {
+						dx=entity.x+40.0*i-this.x;
+			    		dy=entity.y+40.0*j-this.y;
+			    		if(dx*dx+dy*dy<1296.0) {
+			    			food=(Food) entity;
+			    			this.ChangeEp(food.ep_get);
+			    			this.ChangeHp(food.hp_get);
+			    		}
+		    		}
+				}
+			}
+		}
+	}
+	@SuppressWarnings("unchecked")
+	public void ChangeEp(int value) {
+		if(value!=0) {
+			this.ep+=value;
+			if(this.ep>1000) this.ep=1000;
+			if(this.ep<0) this.ep=0;
+			JSONObject obj = new JSONObject();
+			obj.put("type", "ep");
+			obj.put("val", this.ep);
+			try { this.session.getBasicRemote().sendText(obj.toJSONString());
+			} catch (IOException e) {e.printStackTrace();}
+		}
+	}
+	@SuppressWarnings("unchecked")
+	public void ChangeHp(int value) {
+		if(value!=0) {
+			this.hp+=value;
+			if(this.hp>1000) this.hp=1000;
+			if(this.hp<0) {
+				this.hp=0;
+				this.Delete();
+			}
+			JSONObject obj = new JSONObject();
+			obj.put("type", "hp");
+			obj.put("val", this.hp);
+			try { this.session.getBasicRemote().sendText(obj.toJSONString());
+			} catch (IOException e) {e.printStackTrace();}
+		}
 	}
 }

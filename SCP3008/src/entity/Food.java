@@ -2,6 +2,7 @@ package entity;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Random;
 
 import org.json.simple.JSONObject;
 
@@ -19,11 +20,22 @@ public class Food extends Entity{
 		this.y=20.0;
 		this.angle=0.0;
 		this.space=space;
-		switch(type) {
+		int n;
+		if(type==-1) n=(new Random()).nextInt(3);
+		else n=type;
+		switch(n) {
 		case 0:
 			this.imagename="food1";
-			this.hp_get=200;
-			this.ep_get=100;
+			this.hp_get=140;
+			this.ep_get=70;
+			break;
+		case 1:
+			this.imagename="food1";
+			this.hp_get=280;
+			break;
+		case 2:
+			this.imagename="food1";
+			this.ep_get=140;
 			break;
 		}
 		space.entitys.add(this);
@@ -42,7 +54,7 @@ public class Food extends Entity{
 						if(entity.tag==0) {
 							player=(Player) entity;
 							JSONObject obj = new JSONObject();
-							obj.put("type", "newFood");
+							obj.put("type", "NewFood");
 							obj.put("dsx", 40-i);
 							obj.put("dsy", 40-j);
 							obj.put("id", this.id);
@@ -65,13 +77,37 @@ public class Food extends Entity{
 		this.y=20.0;
 		this.angle=0.0;
 		this.space=space;
-		switch(type) {
+		int n;
+		if(type==-1) n=(new Random()).nextInt(3);
+		else n=type;
+		switch(n) {
 		case 0:
 			this.imagename="food1";
-			this.hp_get=200;
-			this.ep_get=100;
+			this.hp_get=140;
+			this.ep_get=70;
+			break;
+		case 1:
+			this.imagename="food1";
+			this.hp_get=280;
+			break;
+		case 2:
+			this.imagename="food1";
+			this.ep_get=140;
 			break;
 		}
 		space.entitys.add(this);
+	}
+	@SuppressWarnings("unchecked")
+	public void Delete() {
+		// 음식이 제거되었으므로 주변 플레이어들에게 해당 정보 전송
+		Iterator<Player> iter = this.space.PlayerNearby(40, 40).iterator(); //Iterator 선언 
+		while(iter.hasNext()){//다음값이 있는지 체크
+			JSONObject obj = new JSONObject();
+			obj.put("type", "DelEtt");
+			obj.put("id", this.id);
+			try { iter.next().session.getBasicRemote().sendText(obj.toJSONString());
+			} catch (IOException e) {e.printStackTrace();}
+		}
+		this.space.entitys.remove(this);
 	}
 }
