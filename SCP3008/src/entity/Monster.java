@@ -32,7 +32,7 @@ public class Monster extends Entity {
 		this.id=Map.id++;
 		this.x=20.0;
 		this.y=20.0;
-		this.angle=0.0;
+		this.angle=Math.PI*2*Math.random();
 		this.space=space;
 		this.target=null;
 		this.right_bump_count=0;
@@ -71,7 +71,7 @@ public class Monster extends Entity {
 		this.id=Map.id++;
 		this.x=20.0;
 		this.y=20.0;
-		this.angle=0.0;
+		this.angle=Math.PI*2*Math.random();
 		this.space=space;
 		this.target=null;
 		this.right_bump_count=0;
