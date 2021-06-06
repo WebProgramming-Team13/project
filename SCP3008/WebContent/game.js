@@ -80,7 +80,7 @@ function Monster(space, id, x, y, angle, imagename, hp) {//monster 객체
 	this.id=id;
 	this.x=x;
 	this.y=y;
-	this.angle=angle;
+	this.angle=Math.PI*2*Math.random();
 	this.space=space;
 	this.image = new Image(); this.image.src = "images/"+imagename+".png";
 	this.hp=hp;
