@@ -596,10 +596,12 @@ function onMessage(event) { //서버로부터 메세지가 왔을 때 실행될 
 		}
 		break;
 	case "ep" : //ep 설정
-		p_ep=obj.val
+		p_ep=obj.val;
+		setNum(); //숫자 설정
 		break;
 	case "hp" : // hp 설정
-		p_hp=obj.val
+		p_hp=obj.val;
+		setNum(); //숫자 설정
 		if(p_hp==0) {
 			clearInterval(mainintervalId);
 			mainintervalId = setInterval(maininterval_gameover, 20);
