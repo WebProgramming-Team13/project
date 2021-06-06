@@ -59,7 +59,9 @@ function drawPlayer() {//player 그리기 : player는 무조건 캔버스 정 �
 //함수 END
 //플레이어 END
 
-function Space(imagename) { //space 객체
+function Space(imagename, sx, sy) { //space 객체
+	this.sx=sx;
+	this.sy=sy;
 	this.entitylist=new Array();
 	this.terrain=null;
 	this.image = new Image(); this.image.src = "images/"+imagename+".png";
@@ -406,7 +408,8 @@ function p_collision() {//player충돌처리
         x: p_x,
         y: p_y,
         sx: p_space_x,
-        sy: p_space_y
+        sy: p_space_y,
+        agl:p_angle
       }));
 	
 	if(start_map_loading && !map_roading) { //새로 맵 로딩 시작할지 여부
@@ -470,7 +473,7 @@ function onMessage(event) { //서버로부터 메세지가 왔을 때 실행될 
 		    	s=obj.slist[i][j];
 		    	if (s==null) space=voidspace;
 		    	else {
-		    		space=new Space(s.img);
+		    		space=new Space(s.img,i,j);
 			    	for (k = 0; k < s.e_c; k++) {
 			    		s_ett=obj.slist[i][j].ett[k];
 			    		tag=s_ett.tag;
@@ -532,17 +535,71 @@ function onMessage(event) { //서버로부터 메세지가 왔을 때 실행될 
 	case "StartML" : // 맵 로딩 시작 요청
 		start_map_loading=true;
 		break;
-	case "" : // ...
-		
+	case "Mmv" : // 몬스터 움직임
+		entity=getbyid(obj.id);
+		if(entity!=null) {
+			space = entity.space;
+			if(obj.x-entity.x<-30.0) {
+				for(i = 0; i < space.entitylist.length; i++) {
+					if(space.entitylist[i] == entity)  {
+						space.entitylist.splice(i, 1);
+					    break;
+					}
+				}
+				if(space.sx!=80) {//몹이 맵을 벗어나면 제거
+					space=spaces[space.sx+1][space.sy];
+					space.entitylist.push(entity);
+				}
+			}
+			else if(obj.x-entity.x>30.0) {
+				for(i = 0; i < space.entitylist.length; i++) {
+					if(space.entitylist[i] == entity)  {
+						space.entitylist.splice(i, 1);
+					    break;
+					}
+				}
+				if(space.sx!=0) {//몹이 맵을 벗어나면 제거
+					space=spaces[space.sx-1][space.sy];
+					space.entitylist.push(entity);
+				}
+			}
+			if(obj.y-entity.y<-30.0) {
+				for(i = 0; i < space.entitylist.length; i++) {
+					if(space.entitylist[i] == entity)  {
+						space.entitylist.splice(i, 1);
+					    break;
+					}
+				}
+				if(space.sy!=80) {//몹이 맵을 벗어나면 제거
+					space=spaces[space.sx][space.sy+1];
+					space.entitylist.push(entity);
+				}
+			}
+			else if(obj.y-entity.y>30.0) {
+				for(i = 0; i < space.entitylist.length; i++) {
+					if(space.entitylist[i] == entity)  {
+						space.entitylist.splice(i, 1);
+					    break;
+					}
+				}
+				if(space.sy!=0) {//몹이 맵을 벗어나면 제거
+					space=spaces[space.sx][space.sy-1];
+					space.entitylist.push(entity);
+				}
+			}
+			entity.x=obj.x;
+			entity.y=obj.y;
+			entity.angle=obj.agl;
+		}
+		else {//몹이 맵안으로 들어오면 몹 생성
+			//...
+		}
 		break;
-	case "" : // ...
-		
+	case "ep" : //ep 설정
+		p_ep=obj.val
 		break;
-	case "ep" : // ...
-		p_ep=obg.val
-		break;
-	case "hp" : // ...
-		p_hp=obg.val
+	case "hp" : // hp 설정
+		p_hp=obj.val
 		if(p_hp==0) {
 			clearInterval(mainintervalId);
 			mainintervalId = setInterval(maininterval_gameover, 20);
@@ -635,7 +692,7 @@ function start() {	// start 버튼 클릭시 이벤트
 	for (let i = 0; i < 81; i++) {
 		spaces[i] = new Array(81);
 	    for (let j = 0; j < 81; j++) {
-	    	spaces[i][j]=new Space("basicfloor");
+	    	spaces[i][j]=new Space("basicfloor",i,j);
 		}
 	}
 	temp_spaces= new Array(81); //임시 맵

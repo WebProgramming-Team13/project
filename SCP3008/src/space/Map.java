@@ -16,6 +16,7 @@ public class Map {
 	public static Section headsection = null;
 	public static LinkedList<Player> playerlist=new LinkedList<Player>();
 	public static LinkedList<Monster> monsterlist=new LinkedList<Monster>();
+	public static LinkedList<Section> sectionlist=new LinkedList<Section>();
 	
 	public static Section CreateSection() {// 맵생성
 		if(headsection==null) {

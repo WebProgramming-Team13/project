@@ -151,6 +151,7 @@ public class Section {
 			} catch (IOException e) {e.printStackTrace();}
 		}
 		spaces=null;
+		Map.sectionlist.add(this);
 	}
 	// 공허 구역 생성
 	public Section(boolean t) {
@@ -172,5 +173,47 @@ public class Section {
 			space=space.down;
 		}
 		return space;
+	}
+	public void RefillFurniture(double ratio) { //가구 리필, 스폰 지역에 ratio의 비율로 가구가 존재하도록 설계됨
+		int i,j,k,n,count=0, terrain_count=0;
+		Space tempspace, space;
+		for(i=1;i<100;i+=20) {
+			for(j=1;j<100;j+=20) {
+				if((i!=1 && i!=81) || (j!=1 && j!=81)) {
+					space = this.getspace(i,j);
+					for(k=0;k<18;k++) {
+						tempspace=space;
+						for(n=0;n<18;n++) {
+							count++;
+							if(space.terrain==null) {
+								if(space.entitys.size()==0) {
+									if((double) terrain_count / (double) count<ratio) new Furniture(-1, space);
+									terrain_count++;
+								}
+							}
+							else terrain_count++;
+							space=space.down;
+						}
+						space=tempspace;
+						space=space.right;
+					}
+				}
+			}
+		}
+	}
+	public void RefillFood(int num) {//음식 리필, 한 구역에 num개의 음식 리필
+		int i,j,k,n,count=num, rdnum;
+		Space space;
+		Random random = new Random();
+		while(count!=0) {
+			i=random.nextInt(5);
+			if(i==0 || i==4) j=random.nextInt(3)+1;
+			else j=random.nextInt(5);
+			space=this.getspace(1+20*i+random.nextInt(18),1+20*j+random.nextInt(18));
+			if(space.terrain==null && space.entitys.size()==0) {
+				new Food(-1, space);
+				count--;
+			}
+		}
 	}
 }

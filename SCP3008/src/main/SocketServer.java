@@ -45,6 +45,7 @@ public class SocketServer {
 				break;	
 			case "mov": // 플레이어 이동
 				player=Map.GetPlayer(session);
+				player.angle=Double.parseDouble(String.valueOf(obj.get("agl")));
 				player.Move(
 						Integer.parseInt(String.valueOf(obj.get("sx"))),
 						Integer.parseInt(String.valueOf(obj.get("sy"))),

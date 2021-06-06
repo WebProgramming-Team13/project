@@ -101,4 +101,10 @@ public class Furniture extends Terrain {// Furniture = 부수거나 옮길 수 �
 		}
 		this.space.terrain=null;
 	}
+	public void ChangeHp(int value) {
+		if(value!=0) {
+			this.hp+=value;
+			if(this.hp<0) this.Delete();
+		}
+	}
 }
