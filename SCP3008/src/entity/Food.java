@@ -32,9 +32,11 @@ public class Food extends Entity{
 		case 1:
 			this.imagename="food1";
 			this.hp_get=280;
+			this.ep_get=0;
 			break;
 		case 2:
 			this.imagename="food1";
+			this.hp_get=0;
 			this.ep_get=140;
 			break;
 		}

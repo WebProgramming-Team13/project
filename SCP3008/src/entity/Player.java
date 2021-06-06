@@ -23,9 +23,9 @@ public class Player extends Entity {
 	public boolean aggro;
 	public int hp;
 	public double speed;
+	//연산용 변수
 	private int sx;
 	private int sy;
-	private Space temp_space;
 	
 	public Player(Session session, String name, Space space) {
 		this.tag=0;
@@ -155,26 +155,27 @@ public class Player extends Entity {
 		} catch (IOException e) {e.printStackTrace();}
 	}
 	
-	public void Move(int sx, int sy, double x, double y) {
+	public void Move(int sx, int sy, double x, double y) { //이동
 		this.x=x;
 		this.x=y;
+		Space tempspace, _space;
 		switch(sx-this.sx) {
 		case 0:
 			break;
 		case 1:
-			this.temp_space=this.space.right;
-			if(this.temp_space.entitys!=null) {
+			tempspace=this.space.right;
+			if(tempspace.entitys!=null) {
 				this.space.entitys.remove(this);
-				this.space=this.temp_space;
+				this.space=tempspace;
 				this.space.entitys.add(this);
 			}
 			this.sx=sx;
 			break;
 		case -1:
-			this.temp_space=this.space.left;
-			if(this.temp_space.entitys!=null) {
+			tempspace=this.space.left;
+			if(tempspace.entitys!=null) {
 				this.space.entitys.remove(this);
-				this.space=this.temp_space;
+				this.space=tempspace;
 				this.space.entitys.add(this);
 			}
 			this.sx=sx;
@@ -186,19 +187,19 @@ public class Player extends Entity {
 		case 0:
 			break;
 		case 1:
-			this.temp_space=this.space.down;
-			if(this.temp_space.entitys!=null) {
+			tempspace=this.space.down;
+			if(tempspace.entitys!=null) {
 				this.space.entitys.remove(this);
-				this.space=this.temp_space;
+				this.space=tempspace;
 				this.space.entitys.add(this);
 			}
 			this.sy=sy;
 			break;
 		case -1:
-			this.temp_space=this.space.up;
-			if(this.temp_space.entitys!=null) {
+			tempspace=this.space.up;
+			if(tempspace.entitys!=null) {
 				this.space.entitys.remove(this);
-				this.space=this.temp_space;
+				this.space=tempspace;
 				this.space.entitys.add(this);
 			}
 			this.sy=sy;
@@ -208,11 +209,15 @@ public class Player extends Entity {
 		}
 		//Food 충돌처리
 		Entity entity;
+		Iterator<Entity> iter;
 		Food food;
 		double dx, dy;
+		
+		_space=this.space.up.left;
 		for (int i = -1; i <= 1; i++) {
+			tempspace=_space;
 		    for (int j = -1; j <= 1; j++) {
-		    	Iterator<Entity> iter = this.space.entitys.iterator(); //Iterator 선언 
+		    	iter = _space.entitys.iterator(); //Iterator 선언 
 				while(iter.hasNext()){//다음값이 있는지 체크
 					entity=iter.next();
 					if(entity.tag==2) {
@@ -225,7 +230,9 @@ public class Player extends Entity {
 			    		}
 		    		}
 				}
+				_space=_space.down;
 			}
+		    _space=tempspace.right;
 		}
 	}
 	@SuppressWarnings("unchecked")
